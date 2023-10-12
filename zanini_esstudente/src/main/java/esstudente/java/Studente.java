@@ -2,14 +2,13 @@ package esstudente.java;
 
 import java.util.*;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 public class Studente {
 
     private String nome;
     private String cognome;
     private String corsoDiStudi;
-    private float[] voti = new float[10];
+    private ArrayList<Float> voti = new ArrayList<Float>();
     private int matricola;
     private Date dataDiNascita;
 
@@ -53,24 +52,28 @@ public class Studente {
         corsoDiStudi=c;
     }
 
-    public void aggiungiVoto(float voto, int indiceCorso) {
-        if (indiceCorso >= 0 && indiceCorso < 10) {
-            voti[indiceCorso] = voto;
+    public void aggiungiVoto(float voto) {
+        try{
+            if(voto <= 0 || voto > 30){
+                throw new Exception("Inserire un nuovo voto", null);
+            }else {
+            voti.add(voto);
+            }
+        }catch(Exception e){
+            System.out.println("Errore nell'inserimento dei voti");
         }
     }
 
-    public void rimuoviVoti() {
-        for (int i = 0; i < 10; i++) {
-            voti[i] = 0.0f;
-        }
+    public void rimuoviVoti(int indice) {
+        voti.remove(indice);
     }
 
     public float calcolaMediaVoti() {
         float somma = 0.0f;
         int conteggio = 0;
         for (int i = 0; i < 10; i++) {
-            if (voti[i] > 0) {
-                somma += voti[i];
+            if (voti.get(i) > 0) {
+                somma += voti.get(i);
                 conteggio++;
             }
         }
@@ -109,9 +112,13 @@ public class Studente {
         sb.append("Matricola: ").append(matricola).append("\n");
         sb.append("Corso di studi: ").append(corsoDiStudi).append("\n");
         sb.append("Voti:\n");
-        for (int i = 0; i < 10; i++) {
-            sb.append("Voto ").append(i + 1).append(": ").append(voti[i]).append("\n");
+        for (int i = 0; i < voti.size(); i++) {
+            sb.append("Voto ").append(i + 1).append(": ");
+        if (i < voti.size()) {  //errore out of bound
+            sb.append(voti.get(i));
         }
+        sb.append("\n");
+    }
         return sb.toString();
     }
 }
