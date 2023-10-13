@@ -8,7 +8,7 @@ import java.util.*;
 public class Calcolatrice implements ActionListener{
     private JPanel Panel;
     private JLabel lbl;
-    private JButton btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btnVirgola, btnUguale, btnSottrai, btnSomma, btnMoltiplica, btnDividi, btnRPN, btnParChiudi, btnParApri, btnSpazio, btnCanc;
+    private JButton btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btnUguale, btnSottrai, btnSomma, btnMoltiplica, btnDividi, btnRPN, btnParChiudi, btnParApri, btnSpazio, btnCanc;
     private JLabel lblConvert;
 
     public Calcolatrice(){
@@ -31,7 +31,6 @@ public class Calcolatrice implements ActionListener{
         btnParApri.addActionListener(this);
         btnSpazio.addActionListener(this);
         btnUguale.addActionListener(this);
-        btnVirgola.addActionListener(this);
         btnCanc.addActionListener(this);
     }
 
@@ -73,8 +72,6 @@ public class Calcolatrice implements ActionListener{
             lbl.setText(lbl.getText() + " ");
         if (e.getSource() == btnUguale)
             TraduciInRPN(lbl.getText());
-        if (e.getSource() == btnVirgola)
-            lbl.setText(lbl.getText() + ",");
         if (e.getSource() == btnRPN)
            CalcolaRPN(lbl.getText());
         if(e.getSource()==btnCanc)
