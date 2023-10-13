@@ -9,6 +9,7 @@ public class Calcolatrice implements ActionListener{
     private JPanel Panel;
     private JLabel lbl;
     private JButton btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btnVirgola, btnUguale, btnSottrai, btnSomma, btnMoltiplica, btnDividi, btnRPN, btnParChiudi, btnParApri, btnSpazio, btnCanc;
+    private JLabel lblConvert;
 
     public Calcolatrice(){
         btn0.addActionListener(this);
@@ -111,8 +112,10 @@ public class Calcolatrice implements ActionListener{
             rpn.append(ops.pop()).append(" ");
         }
 
-        System.out.println(rpn.toString().trim());
-        CalcolaRPN(rpn.toString().trim());
+        String sf = rpn.toString().trim();
+
+        lblConvert.setText(sf);
+        CalcolaRPN(sf);
     }
 
     private static boolean ControlloOPC(char c) {
