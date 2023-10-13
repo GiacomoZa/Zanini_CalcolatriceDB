@@ -7,9 +7,8 @@ import java.util.*;
 
 public class Calcolatrice implements ActionListener{
     private JPanel Panel;
-    private JButton btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btnVirgola, btnUguale, btnSottrai, btnSomma, btnMoltiplica, btnDividi, btnRPN, btnParChiudi, btnParApri, btnSpazio;
     private JLabel lbl;
-    private JButton btnCanc;
+    private JButton btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btnVirgola, btnUguale, btnSottrai, btnSomma, btnMoltiplica, btnDividi, btnRPN, btnParChiudi, btnParApri, btnSpazio, btnCanc;
 
     public Calcolatrice(){
         btn0.addActionListener(this);
@@ -80,108 +79,108 @@ public class Calcolatrice implements ActionListener{
         if(e.getSource()==btnCanc)
             lbl.setText(" ");
     }
-    public void TraduciInRPN(String infix) {
+    public void TraduciInRPN(String s) {
         StringBuilder rpn = new StringBuilder();
-        Stack<Character> operatorStack = new Stack<>();
+        Stack<Character> ops = new Stack<>();
 
-        for (int i = 0; i < infix.length(); i++) {
-            char c = infix.charAt(i);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
             if (Character.isDigit(c)) {
                 rpn.append(c);
-                while (i + 1 < infix.length() && (Character.isDigit(infix.charAt(i + 1)) || infix.charAt(i + 1) == ',')) {
+                while (i + 1 < s.length() && (Character.isDigit(s.charAt(i + 1)) || s.charAt(i + 1) == ',')) {
                     i++;
-                    rpn.append(infix.charAt(i));
+                    rpn.append(s.charAt(i));
                 }
                 rpn.append(" ");
             } else if (c == '(') {
-                operatorStack.push(c);
+                ops.push(c);
             } else if (c == ')') {
-                while (!operatorStack.isEmpty() && operatorStack.peek() != '(') {
-                    rpn.append(operatorStack.pop()).append(" ");
+                while (!ops.isEmpty() && ops.peek() != '(') {
+                    rpn.append(ops.pop()).append(" ");
                 }
-                operatorStack.pop(); // Rimuovi la parentesi aperta
-            } else if (isOperator(c)) {
-                while (!operatorStack.isEmpty() && precedenza(operatorStack.peek()) >= precedenza(c)) {
-                    rpn.append(operatorStack.pop()).append(" ");
+                ops.pop(); // Rimozione della parentesi aperta
+            } else if (ControlloOPC(c)) {
+                while (!ops.isEmpty() && Precedenza(ops.peek()) >= Precedenza(c)) {
+                    rpn.append(ops.pop()).append(" ");
                 }
-                operatorStack.push(c);
+                ops.push(c);
             }
         }
 
-        while (!operatorStack.isEmpty()) {
-            rpn.append(operatorStack.pop()).append(" ");
+        while (!ops.isEmpty()) {
+            rpn.append(ops.pop()).append(" ");
         }
+
         System.out.println(rpn.toString().trim());
         CalcolaRPN(rpn.toString().trim());
     }
 
-    private static boolean isOperator(char c) {
+    private static boolean ControlloOPC(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
-    private static int precedenza(char c) {
+    private static int Precedenza(char c) {
         if (c == '+' || c == '-') {
             return 1;
         } else if (c == '*' || c == '/') {
             return 2;
         }
-        return 0; // Per gli altri caratteri
+        return 0;
     }
 
     public void CalcolaRPN(String n){
         Stack<String> stack = new Stack<>();
-        String[] tokens = n.split("\\s+");
+        String[] ops = n.split("\\s+");
 
-        for (String token : tokens) {
-            if (isNumber(token)) {
-                stack.push(token);
-            } else if (isOperator(token)) {
+        for (String op : ops) {
+            if (ControlloNumero(op)) {
+                stack.push(op);
+            } else if (ControlloOPS(op)) {
                 if (stack.size() < 2) {
-                    throw new IllegalArgumentException("Espressione RPN non valida.");
+                    throw new IllegalArgumentException("ERRORE, espressione RPN non valida");
                 }
                 String operand2 = stack.pop();
                 String operand1 = stack.pop();
-                Double result = Operazioni(Double.parseDouble(operand1), Double.parseDouble(operand2), token);
+                Double result = Operazioni(Double.parseDouble(operand1), Double.parseDouble(operand2), op);
                 stack.push(String.valueOf(result));
             }
         }
 
         if (stack.size() != 1) {
-            throw new IllegalArgumentException("Espressione RPN non valida.");
+            throw new IllegalArgumentException("ERRORE, espressione RPN non valida");
         }
-        //System.out.println(stack.pop());
 
         lbl.setText(stack.pop());
     }
 
-    private static boolean isNumber(String token) {
+    private static boolean ControlloNumero(String op) {
         try {
-            Double.parseDouble(token);
+            Double.parseDouble(op);
             return true;
         } catch (NumberFormatException e) {
             return false;
         }
     }
 
-    private static boolean isOperator(String token) {
-        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/");
+    private static boolean ControlloOPS(String op) {
+        return op.equals("+") || op.equals("-") || op.equals("*") || op.equals("/");
     }
 
-    private static double Operazioni(double operand1, double operand2, String operator) {
+    private static double Operazioni(double op1, double op2, String operator) {
         switch (operator) {
             case "+":
-                return operand1 + operand2;
+                return op1 + op2;
             case "-":
-                return operand1 - operand2;
+                return op1 - op2;
             case "*":
-                return operand1 * operand2;
+                return op1 * op2;
             case "/":
-                if (operand2 == 0) {
-                    throw new ArithmeticException("Divisione per zero.");
+                if (op2 == 0) {
+                    throw new ArithmeticException("ERRORE, divisione per zero");
                 }
-                return operand1 / operand2;
+                return op1 / op2;
             default:
-                throw new IllegalArgumentException("Operatore non valido: " + operator);
+                throw new IllegalArgumentException("ERRORE, operatore non valido: " + operator);
         }
     }
 
