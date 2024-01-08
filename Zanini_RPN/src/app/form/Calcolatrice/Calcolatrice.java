@@ -3,15 +3,23 @@ package app.form.Calcolatrice;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class Calcolatrice implements ActionListener{
     private JPanel Panel;
-    private JLabel lbl;
+    private JLabel lbl, lblConvert;
     private JButton btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btnUguale, btnSottrai, btnSomma, btnMoltiplica, btnDividi, btnRPN, btnParChiudi, btnParApri, btnSpazio, btnCanc;
-    private JLabel lblConvert;
+    private String username;
+    private Connection conn;
 
-    public Calcolatrice(){
+    public Calcolatrice(String username, Connection connessione){
+        this.username = username;
+        this.conn = connessione;
+        System.out.println(conn);
         btn0.addActionListener(this);
         btn1.addActionListener(this);
         btn2.addActionListener(this);
@@ -33,6 +41,29 @@ public class Calcolatrice implements ActionListener{
         btnUguale.addActionListener(this);
         btnCanc.addActionListener(this);
     }
+
+    /*public Calcolatrice(){
+        btn0.addActionListener(this);
+        btn1.addActionListener(this);
+        btn2.addActionListener(this);
+        btn3.addActionListener(this);
+        btn4.addActionListener(this);
+        btn5.addActionListener(this);
+        btn6.addActionListener(this);
+        btn7.addActionListener(this);
+        btn8.addActionListener(this);
+        btn9.addActionListener(this);
+        btnSottrai.addActionListener(this);
+        btnSomma.addActionListener(this);
+        btnMoltiplica.addActionListener(this);
+        btnDividi.addActionListener(this);
+        btnRPN.addActionListener(this);
+        btnParChiudi.addActionListener(this);
+        btnParApri.addActionListener(this);
+        btnSpazio.addActionListener(this);
+        btnUguale.addActionListener(this);
+        btnCanc.addActionListener(this);
+    }*/
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -70,13 +101,72 @@ public class Calcolatrice implements ActionListener{
             lbl.setText(lbl.getText() + ")");
         if (e.getSource() == btnSpazio)
             lbl.setText(lbl.getText() + " ");
-        if (e.getSource() == btnUguale)
-            TraduciInRPN(lbl.getText());
         if (e.getSource() == btnRPN)
-           CalcolaRPN(lbl.getText());
+            CalcolaRPN(lbl.getText());
         if(e.getSource()==btnCanc)
             lbl.setText(" ");
+        if (e.getSource() == btnUguale) {
+            String espress = lbl.getText();
+            TraduciInRPN(espress);
+            System.out.println(conn);
+            SalvaRisultatoNelDatabase(espress);
+        }
     }
+
+    private void SalvaRisultatoNelDatabase(String espress) {
+        try {
+            if (conn == null || conn.isClosed()) {
+                return;
+            }
+
+            int idUtente = getIdUtente();
+
+            String query = "INSERT INTO cronologia (espressione, risultato, IDutente) VALUES (?, ?, ?)";
+            try (PreparedStatement statement = conn.prepareStatement(query)) {
+                statement.setString(1, espress);
+                statement.setString(2, lbl.getText());
+                statement.setInt(3, idUtente);
+
+                int rowsAffected = statement.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println("Risultato salvato nel database.");
+                } else {
+                    System.out.println("Errore durante il salvataggio del risultato nel database.");
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private int getIdUtente() {
+        int idUtente = -1;
+
+        try {
+            if (conn == null || conn.isClosed()) {
+                System.out.println("Errore: Connessione al database non valida.");
+                return idUtente;
+            }
+
+            String query = "SELECT ID FROM utente WHERE nome = ?";
+            try (PreparedStatement statement = conn.prepareStatement(query)) {
+                statement.setString(1, this.username);
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        idUtente = resultSet.getInt("ID");
+                    } else {
+                        System.out.println("Errore: Utente non trovato nel database.");
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return idUtente;
+    }
+
     public void TraduciInRPN(String s) {
         StringBuilder rpn = new StringBuilder();
         Stack<Character> ops = new Stack<>();
@@ -184,12 +274,20 @@ public class Calcolatrice implements ActionListener{
         }
     }
 
-    public static void main(String[] args) {
+    public void main(String[] args) {
+        showLoginForm(username, conn);
+    }
+
+    private void showLoginForm(String user, Connection c) {
         JFrame frame = new JFrame("Calcolatrice");
-        frame.setContentPane(new Calcolatrice().Panel);
+        frame.setContentPane(new Calcolatrice(user, c).Panel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
         frame.setResizable(false);
+    }
+
+    public void showLoginForm2(String user, Connection c) {
+        showLoginForm(user, c);
     }
 }
